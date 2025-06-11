@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import Nano from 'nano';
 import { CreateTaskDto } from './dto/create-task.dto';
 
+
 @Injectable()
 export class TasksService implements OnModuleInit {
   private db: Nano.DocumentScope<any>;
