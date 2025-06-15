@@ -1,8 +1,8 @@
 export interface Task {
-  _id?: string;           // CouchDB auto-generates _id if not provided
-  _rev?: string;          // Required for updates/deletes
+  _id?: string;
+  _rev?: string;
   title: string;
   description: string;
-  status: string;
-  createdAt?: string;     // ISO date string
+  status: 'Pending' | 'In Progress' | 'Completed'; 
+  createdAt?: string;
 }
