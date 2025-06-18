@@ -10,11 +10,43 @@
   color: #e2e8f0;
 }
 
+
 .main-title {
   color: #cbd5e1;
   margin-bottom: 30px;
   text-align: center;
   font-size: 2.5em;
+}
+
+.search-bar {
+  display: flex; /* Arranges input and button in a row */
+  margin-bottom: 20px; /* Space below the search bar */
+  gap: 10px; /* Space between the input and button */
+}
+
+/* Styling for the search input field */
+.search-bar input {
+  flex-grow: 1; /* Allows the input to take up available space */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* Styling for the search button */
+.search-bar button {
+  padding: 10px 15px;
+  background-color: #007bff; /* Primary blue color */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease; /* Smooth transition on hover */
+}
+
+.search-bar button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
 }
 
 .no-tasks-message {

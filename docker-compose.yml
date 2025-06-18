@@ -1,7 +1,7 @@
 services:
   couchdb:
-    image: couchdb:3.3
-    restart: always
+    image: couchdb:3.3.2
+    container_name: couchdb_task_manager
     ports:
       - "5984:5984"
     environment:
@@ -9,6 +9,31 @@ services:
       - COUCHDB_PASSWORD=password
     volumes:
       - couchdb_data:/opt/couchdb/data
+    restart: always
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.0 # Or '9.0.1', 'latest' etc.
+    container_name: elasticsearch_task_manager # Good to keep this for easier logging
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false # Keep this for dev, but verify it's working
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g # Try increasing memory to 1GB
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ulimits: # <--- Re-added these crucial ulimits
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck: # <--- Re-added healthcheck for better orchestration
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cat/health?h=st || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped # <--- Recommended restart policy
 
 volumes:
   couchdb_data:
+  elasticsearch_data:

@@ -3,11 +3,15 @@ import Nano from 'nano';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { Task } from './interfaces/task.interface';
 import { UpdateTaskDto } from './dto/update-task.dto';
-
+import { ElasticsearchService } from '../elasticsearch/search-service';
 
 @Injectable()
 export class TasksService implements OnModuleInit {
   private db: Nano.DocumentScope<Task>;
+
+  constructor(
+    private readonly elasticsearchService: ElasticsearchService, 
+  ) {}
 
   async onModuleInit() {
     const nano = Nano('http://admin:password@localhost:5984');
@@ -37,7 +41,9 @@ export class TasksService implements OnModuleInit {
       } as Task;
 
       const response = await this.db.insert(newTask);
-      return { _id: response.id, _rev: response.rev, ...newTask };
+      const createdTaskWithId: Task = { _id: response.id, _rev: response.rev, ...newTask };
+      await this.elasticsearchService.indexDocument(createdTaskWithId._id, createdTaskWithId);
+      return createdTaskWithId;
     } catch (error) {
       console.error('Error creating task in DB:', error);
       throw error;
@@ -110,5 +116,12 @@ export class TasksService implements OnModuleInit {
       throw new InternalServerErrorException(`Failed to delete task with ID ${id}.`);
     }
   }
-  
+  async searchTasks(query: string): Promise<Task[]> {
+    if (!query || query.trim() === '') {
+      return this.findAll();
+    }
+    const results = await this.elasticsearchService.searchDocuments(query);
+    return results as Task[];
+  }
+
 }

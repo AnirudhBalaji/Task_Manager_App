@@ -1,6 +1,16 @@
 <div class="task-list-container">
   <h1 class="main-title">All Tasks</h1>
 
+  <div class="search-bar">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      placeholder="Search tasks by title or description..."
+      (keyup.enter)="loadTasks()"
+    />
+    <button (click)="loadTasks()">Search</button>
+  </div>
+
   <p *ngIf="isLoading">Loading tasks...</p>
   <p *ngIf="error" class="error-message">{{ error }}</p>
 
