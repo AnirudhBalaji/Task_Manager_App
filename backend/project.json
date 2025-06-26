@@ -36,7 +36,7 @@
       }
     },
    "test": {
-  "executor": "@nrwl/jest:jest",
+  "executor": "@nx/jest:jest",
   "outputs": ["{workspaceRoot}/coverage/backend"],
   "options": {
     "jestConfig": "backend/jest.config.ts",
