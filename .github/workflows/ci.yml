@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - master
+      - dev
   pull_request:
     branches:
       - main
       - master
+      - dev
 
 jobs:
   # Job to run Nx lint checks
