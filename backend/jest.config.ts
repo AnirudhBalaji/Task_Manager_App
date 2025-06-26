@@ -1,9 +1,7 @@
-import { getJestProjects } from '@nx/jest';
-
 export default {
   displayName: 'backend',
   preset: '../../jest.preset.js',
-  rootDir: '../../', // ✅ Fix the root directory
+  rootDir: '../../',
   testEnvironment: 'node',
   roots: ['<rootDir>/backend/src'],
   transform: {
