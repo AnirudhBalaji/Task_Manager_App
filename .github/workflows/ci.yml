@@ -54,7 +54,8 @@ jobs:
         run: npm install
 
       - name: Check code formatting (Nx format:check)
-        run: npx nx format:check --all # Check formatting for all projects
+        # Corrected command to check formatting for all projects
+        run: npx nx run-many --target=format-check --all
 
   # Job to run unit tests for the backend
   unit-test:
