@@ -41,15 +41,14 @@ export class ElasticsearchService implements OnModuleInit, OnModuleDestroy {
 
   async indexDocument(id: string, document: Task): Promise<void> {
     try {
-    
       const documentToIndex: Partial<Task> = { ...document };
       delete documentToIndex._id;
-      delete documentToIndex._rev; 
+      delete documentToIndex._rev;
 
       await this.client.index({
         index: this.indexName,
         id: id,
-        document: documentToIndex, 
+        document: documentToIndex,
       });
       this.logger.debug(`Document ${id} indexed in Elasticsearch.`);
     } catch (error: any) {
@@ -58,21 +57,32 @@ export class ElasticsearchService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async searchDocuments(query: string): Promise<Task[]> {
+  async searchDocuments(query: string, userId: string): Promise<Task[]> { 
     try {
       const { hits } = await this.client.search({
         index: this.indexName,
         query: {
-          multi_match: {
-            query: query,
-            fields: ['title'], 
-            type: 'phrase_prefix'
+          bool: {
+            must: [
+              {
+                multi_match: {
+                  query: query,
+                  fields: ['title', 'description'], 
+                  type: 'phrase_prefix',
+                },
+              },
+              {
+                term: {
+                  userId: userId, 
+                },
+              },
+            ],
           },
         },
       });
       return hits.hits.map(hit => hit._source as Task);
     } catch (error: any) {
-      this.logger.error(`Failed to search documents for query "${query}":`, error);
+      this.logger.error(`Failed to search documents for query "${query}" and user "${userId}":`, error);
       throw new InternalServerErrorException(`Failed to search documents.`);
     }
   }

@@ -1,38 +1,63 @@
 services:
-  couchdb:
-    image: couchdb:3.3.2
-    container_name: couchdb_task_manager
+  couchdb_task_manager:
+    image: couchdb:3.3
     ports:
       - "5984:5984"
     environment:
       - COUCHDB_USER=admin
       - COUCHDB_PASSWORD=password
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://admin:password@localhost:5984/_up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - couchdb_data:/opt/couchdb/data
-    restart: always
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.0 # Or '9.0.1', 'latest' etc.
-    container_name: elasticsearch_task_manager # Good to keep this for easier logging
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.0
+    container_name: elasticsearch_task_manager
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false # Keep this for dev, but verify it's working
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g # Try increasing memory to 1GB
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
     ports:
       - "9200:9200"
       - "9300:9300"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
-    ulimits: # <--- Re-added these crucial ulimits
+    ulimits:
       memlock:
         soft: -1
         hard: -1
-    healthcheck: # <--- Re-added healthcheck for better orchestration
+    healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9200/_cat/health?h=st || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 5
-    restart: unless-stopped # <--- Recommended restart policy
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    container_name: nestjs_task_manager
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      couchdb_task_manager:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - COUCHDB_URL=http://couchdb_task_manager:5984
+      - ELASTICSEARCH_NODE=http://elasticsearch:9200
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
 
 volumes:
   couchdb_data:

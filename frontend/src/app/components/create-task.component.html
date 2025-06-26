@@ -32,7 +32,6 @@
         <button type="submit" [disabled]="!taskForm.valid || loading">
           {{ loading ? 'Creating...' : 'Create Task' }}
         </button>
-        <button type="button" class="cancel-button" (click)="router.navigate(['/'])">Cancel</button>
       </div>
     </form>
   </div>

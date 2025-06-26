@@ -11,6 +11,7 @@ export interface Task {
   description: string;
   status: 'Pending' | 'In Progress' | 'Completed';
   createdAt?: string;
+  userId: string; 
 }
 
 @Component({
