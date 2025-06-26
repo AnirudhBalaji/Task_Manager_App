@@ -81,12 +81,12 @@ jobs:
           echo "Contents:"
           ls -R
       
-      - name: Check for jest.preset.js
+      - name: Check for jest-preset.js
         run: |
-          if [ -f jest.preset.js ]; then
-            echo "Found jest.preset.js ✅"
+          if [ -f jest-preset.js ]; then
+            echo "Found jest-preset.js ✅"
           else
-            echo "jest.preset.js NOT found ❌"
+            echo "jest-preset.js NOT found ❌"
             exit 1
           fi
 
