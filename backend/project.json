@@ -1,7 +1,7 @@
 {
   "name": "backend",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/backend/src",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "backend/src",
   "projectType": "application",
   "tags": [],
   "targets": {
@@ -39,7 +39,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/backend/jest.config.ts",
+        "jestConfig": "backend/jest.config.ts",
         "passWithNoTests": true
       }
     }
