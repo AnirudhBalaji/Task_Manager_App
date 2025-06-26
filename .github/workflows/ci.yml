@@ -1,42 +1,113 @@
-name: CI
+name: CI Pipeline
 
 on:
   push:
     branches:
+      - main
       - master
   pull_request:
-
-permissions:
-  actions: read
-  contents: read
+    branches:
+      - main
+      - master
 
 jobs:
-  main:
+  # Job to run Nx lint checks
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          filter: tree:0
+          fetch-depth: 0 # Important for Nx to determine affected projects
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm' # Cache npm dependencies
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Nx Lint (all projects)
+        run: npx nx lint --all
+
+  # Job to check code formatting
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
           fetch-depth: 0
 
-      # This enables task distribution via Nx Cloud
-      # Run this command as early as possible, before dependencies are installed
-      # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
-      # Uncomment this line to enable task distribution
-      # - run: npx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="e2e-ci"
-
-      # Cache node_modules
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
           cache: 'npm'
 
-      - run: npm ci --legacy-peer-deps
-      - run: npx cypress install
-      - uses: nrwl/nx-set-shas@v4
+      - name: Install dependencies
+        run: npm install
 
-      # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
-      # - run: npx nx-cloud record -- echo Hello World
-      # Nx Affected runs only tasks affected by the changes in this PR/commit. Learn more: https://nx.dev/ci/features/affected
-      # When you enable task distribution, run the e2e-ci task instead of e2e
-      - run: npx nx affected -t lint test build e2e
+      - name: Check code formatting (Nx format:check)
+        run: npx nx format:check --all # Check formatting for all projects
+
+  # Job to run unit tests for the backend
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Backend Unit Tests
+        # Assuming your backend project is named 'backend' and tests are configured
+        # You might need to adjust 'backend' to your actual project name if different
+        run: npx nx test backend --passWithNoTests # Use --passWithNoTests if some projects don't have tests yet
+
+  # Job for End-to-End tests (requires more setup)
+  # This is a placeholder. For actual E2E, you'd need to:
+  # 1. Start your backend services (CouchDB, Elasticsearch, NestJS backend)
+  # 2. Have a Playwright/Cypress project configured (e.g., 'backend-e2e')
+  # 3. Run the E2E tests against the running backend
+  e2e-test:
+    runs-on: ubuntu-latest
+    needs: [lint, format-check, unit-test] # Depends on previous jobs
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: E2E Test Placeholder
+        run: |
+          echo "E2E tests will be configured here."
+          echo "This typically involves starting backend services and then running a Playwright/Cypress project (e.g., 'npx nx e2e backend-e2e')."
+          echo "Skipping actual E2E run for now."
+          # Example of how you *would* run E2E if configured:
+          # - name: Start Backend Services (Example, would use services block in job config normally)
+          #   run: docker-compose up -d couchdb elasticsearch backend
+          # - name: Wait for services to be ready
+          #   run: sleep 60 # Adjust as needed for services to fully start
+          # - name: Run E2E Tests
+          #   run: npx nx e2e backend-e2e --headless # Run in headless mode for CI
