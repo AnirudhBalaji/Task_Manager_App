@@ -36,12 +36,13 @@
       }
     },
     "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
-      "options": {
-        "jestConfig": "backend/jest.config.ts",
-        "passWithNoTests": true
-      }
+  "executor": "@nrwl/jest:jest",
+  "outputs": ["coverage/backend"],
+  "options": {
+    "jestConfig": "backend/jest.config.ts",
+    "tsConfig": "backend/tsconfig.spec.json",
+    "passWithNoTests": true
+     }
     }
   }
 }
