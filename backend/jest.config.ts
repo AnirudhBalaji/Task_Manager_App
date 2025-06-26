@@ -1,6 +1,8 @@
+import { join } from 'path';
+
 export default {
   displayName: 'backend',
-  preset: '../../jest.preset.js',
+  preset: join(__dirname, '../../jest.preset.js'),
   rootDir: '../../',
   testEnvironment: 'node',
   roots: ['<rootDir>/backend/src'],
