@@ -1,16 +1,14 @@
-import type { Config } from 'jest';
+import { getJestProjects } from '@nx/jest';
 
-const config: Config = {
+export default {
   displayName: 'backend',
-  preset: '../jest.preset.js', // Points to the workspace root preset (correct)
+  preset: '../../jest.preset.js',
+  rootDir: '../../', // ✅ Fix the root directory
   testEnvironment: 'node',
+  roots: ['<rootDir>/backend/src'],
   transform: {
-    // Corrected tsconfig path: now relative to <rootDir>/backend
-    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/backend/tsconfig.spec.json' }],
+    '^.+\\.[tj]s$': 'ts-jest',
   },
-  moduleFileExtensions: ['ts', 'js', 'html'],
-  // Corrected coverageDirectory path: now relative to <rootDir>/coverage/backend
-  coverageDirectory: '<rootDir>/coverage/backend',
+  moduleFileExtensions: ['ts', 'js', 'json'],
+  coverageDirectory: 'coverage/backend',
 };
-
-export default config;
