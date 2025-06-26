@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - master
-      - dev
+      - dev # Added dev branch
   pull_request:
     branches:
       - main
       - master
-      - dev
+      - dev # Added dev branch
 
 jobs:
   # Job to run Nx lint checks
@@ -32,7 +32,8 @@ jobs:
         run: npm install
 
       - name: Run Nx Lint (all projects)
-        run: npx nx lint --all
+        # Corrected command to lint all projects
+        run: npx nx run-many --target=lint --all
 
   # Job to check code formatting
   format-check:
