@@ -89,6 +89,9 @@ jobs:
             echo "jest-preset.js NOT found ❌"
             exit 1
           fi
+          
+      - name: Show jest preset file contents
+        run: cat jest-preset.js
 
       - name: Run Backend Unit Tests
         # Assuming your backend project is named 'backend' and tests are configured
