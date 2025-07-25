@@ -9,9 +9,9 @@ export class ElasticsearchService implements OnModuleInit, OnModuleDestroy {
   private readonly indexName = 'tasks';
 
   async onModuleInit() {
-    this.client = new Client({
-      node: 'http://localhost:9200',
-    });
+    const node = process.env.ELASTICSEARCH_NODE || 'http://localhost:9200';
+    this.logger.log(`Connecting to Elasticsearch at ${node}`);
+    this.client = new Client({ node });
 
     try {
       await this.client.ping();

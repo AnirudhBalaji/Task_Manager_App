@@ -75,23 +75,6 @@ jobs:
       - name: Install dependencies
         run: npm install
       
-      - name: Debug current directory 
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Contents:"
-          ls -R
-      
-      - name: Check for jest-preset.js
-        run: |
-          if [ -f jest-preset.js ]; then
-            echo "Found jest-preset.js ✅"
-          else
-            echo "jest-preset.js NOT found ❌"
-            exit 1
-          fi
-          
-      - name: Show jest preset file contents
-        run: cat jest-preset.js
 
       - name: Run Backend Unit Tests
         # Assuming your backend project is named 'backend' and tests are configured

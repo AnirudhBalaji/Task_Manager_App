@@ -1,4 +1,10 @@
-import { Injectable, OnModuleInit, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import Nano from 'nano';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { Task } from './interfaces/task.interface';
@@ -17,7 +23,9 @@ export class TasksService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    this.nanoClient = Nano('http://admin:password@localhost:5984');
+    const couchUrl = process.env.COUCHDB_URL || 'http://admin:password@localhost:5984';
+    console.log(`[TasksService] Using CouchDB URL: ${couchUrl}`);
+    this.nanoClient = Nano(couchUrl);
     const dbName = 'tasks';
 
     try {
@@ -37,11 +45,12 @@ export class TasksService implements OnModuleInit {
         throw new InternalServerErrorException('Failed to connect to CouchDB.');
       }
     }
+
     this.db = this.nanoClient.db.use(dbName);
 
     const designDocId = '_design/tasks';
     try {
-      const existingDesignDoc = await this.db.get(designDocId);
+      await this.db.get(designDocId);
       console.log(`CouchDB design document '${designDocId}' already exists.`);
     } catch (error: any) {
       if (error.statusCode === 404) {
@@ -50,27 +59,27 @@ export class TasksService implements OnModuleInit {
             _id: designDocId,
             views: {
               all_tasks_by_user: {
-                map: function(doc) {
+                map: function (doc) {
                   if (doc.userId) {
                     emit(doc.userId, null);
                   }
-                }.toString()
+                }.toString(),
               },
               tasks_by_user_and_status: {
-                map: function(doc) {
+                map: function (doc) {
                   if (doc.userId && doc.status) {
                     emit([doc.userId, doc.status], null);
                   }
-                }.toString()
+                }.toString(),
               },
               tasks_by_user_and_title: {
-                map: function(doc) {
+                map: function (doc) {
                   if (doc.userId && doc.title) {
                     emit([doc.userId, doc.title], doc.description);
                   }
-                }.toString()
-              }
-            }
+                }.toString(),
+              },
+            },
           });
           console.log(`CouchDB design document and user-specific views created.`);
         } catch (designDocError: any) {
@@ -82,16 +91,18 @@ export class TasksService implements OnModuleInit {
         throw new InternalServerErrorException(`Failed to access design document.`);
       }
     }
+
     console.log(`Connected to CouchDB database: ${dbName}`);
   }
 
   async create(createTaskDto: CreateTaskDto, userId: string): Promise<Task> {
     const newTask: Task = {
       ...createTaskDto,
+      description: createTaskDto.description ?? '',
       userId: userId,
       createdAt: new Date().toISOString(),
       status: createTaskDto.status || 'Pending',
-    } as Task;
+    };
 
     try {
       const response = await this.db.insert(newTask);
@@ -138,6 +149,7 @@ export class TasksService implements OnModuleInit {
   async update(id: string, updateTaskDto: UpdateTaskDto, userId: string): Promise<Task> {
     try {
       const existingTask = await this.db.get(id) as Task;
+
       if (!existingTask || existingTask.userId !== userId) {
         throw new NotFoundException(`Task with ID ${id} not found or does not belong to user.`);
       }
@@ -147,10 +159,12 @@ export class TasksService implements OnModuleInit {
         ...updateTaskDto,
         _id: existingTask._id,
         _rev: existingTask._rev,
+        userId: existingTask.userId, // preserve original owner
       } as Task;
 
       const response = await this.db.insert(updatedTask);
       await this.elasticsearchService.indexDocument(updatedTask._id!, updatedTask);
+
       return { ...updatedTask, _rev: response.rev };
     } catch (error: any) {
       if (error.statusCode === 404) {
@@ -164,12 +178,14 @@ export class TasksService implements OnModuleInit {
   async remove(id: string, userId: string) {
     try {
       const existingTask = await this.db.get(id) as Task;
+
       if (!existingTask || existingTask.userId !== userId) {
         throw new NotFoundException(`Task with ID ${id} not found or does not belong to user.`);
       }
 
       const response = await this.db.destroy(existingTask._id!, existingTask._rev!);
       await this.elasticsearchService.deleteDocument(id);
+
       return response;
     } catch (error: any) {
       if (error.statusCode === 404) {

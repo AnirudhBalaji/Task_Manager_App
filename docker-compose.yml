@@ -1,6 +1,7 @@
 services:
   couchdb_task_manager:
     image: couchdb:3.3
+    container_name: couchdb_task_manager
     ports:
       - "5984:5984"
     environment:
@@ -14,7 +15,7 @@ services:
     volumes:
       - couchdb_data:/opt/couchdb/data
 
-  elasticsearch:
+  elasticsearch_task_manager:
     image: docker.elastic.co/elasticsearch/elasticsearch:9.0.0
     container_name: elasticsearch_task_manager
     environment:
@@ -39,24 +40,20 @@ services:
 
   backend:
     build:
-      context: . 
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./backend/Dockerfile
     container_name: nestjs_task_manager
     ports:
       - "3000:3000"
-    env_file:
-      - ./backend/.env
+    environment:
+      - JWT_SECRET=qwertyuiopqwertyuiopqwertyuiop12
+      - COUCHDB_URL=http://admin:password@couchdb_task_manager:5984
+      - ELASTICSEARCH_NODE=http://elasticsearch_task_manager:9200
     depends_on:
       couchdb_task_manager:
         condition: service_healthy
-      elasticsearch:
+      elasticsearch_task_manager:
         condition: service_healthy
-    environment:
-      - COUCHDB_URL=http://couchdb_task_manager:5984
-      - ELASTICSEARCH_NODE=http://elasticsearch:9200
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
     restart: unless-stopped
 
 volumes:

@@ -8,6 +8,7 @@
     }
   ],
   "compilerOptions": {
+    "types": ["@playwright/test"],
     "esModuleInterop": true
   }
 }

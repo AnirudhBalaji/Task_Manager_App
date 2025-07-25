@@ -41,7 +41,6 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Intentionally empty, to satisfy linter rule.
     void 0;
   }
 }

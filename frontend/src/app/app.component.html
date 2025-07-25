@@ -1,9 +1,6 @@
 <div class="app-container">
-  <!-- Sidebar will only be rendered if isAuthenticated$ emits true -->
   <app-sidebar *ngIf="isAuthenticated$ | async"></app-sidebar>
 
-  <!-- Apply a class based on authentication status for main content layout -->
-  <!-- Corrected: Use explicit comparison with false instead of negation with async pipe -->
   <div class="main-content" [class.full-width]="(isAuthenticated$ | async) === false">
     <div class="main-inner">
       <router-outlet></router-outlet>

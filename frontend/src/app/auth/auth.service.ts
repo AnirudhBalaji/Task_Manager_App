@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable } from 'rxjs'; // Import BehaviorSubject and Observable
-import { map } from 'rxjs/operators'; // Import map operator
+import { BehaviorSubject, Observable } from 'rxjs'; 
+import { map } from 'rxjs/operators'; 
 
 export interface LoginUserDto {
   username: string;
@@ -30,36 +30,30 @@ export class AuthService {
   private backendUrl = 'http://localhost:3000/api/auth';
   private userRegistrationUrl = 'http://localhost:3000/api/users/register';
 
-  // Use a BehaviorSubject to hold and emit the current user profile
+ 
   private _currentUserProfileSubject: BehaviorSubject<UserProfile | null>;
-  // Expose the profile as an Observable
+ 
   public currentUserProfile$: Observable<UserProfile | null>;
-  // Expose authentication status as an Observable
+  
   public isAuthenticated$: Observable<boolean>;
 
   constructor(private http: HttpClient, private router: Router) {
-    // Initialize the BehaviorSubject with the current user from localStorage
     const storedUser = localStorage.getItem('currentUser');
     const initialProfile: UserProfile | null = storedUser ? JSON.parse(storedUser) : null;
     this._currentUserProfileSubject = new BehaviorSubject<UserProfile | null>(initialProfile);
     this.currentUserProfile$ = this._currentUserProfileSubject.asObservable();
 
-    // Create isAuthenticated$ observable from currentUserProfile$
     this.isAuthenticated$ = this.currentUserProfile$.pipe(
       map(user => user !== null)
     );
 
     console.log('AuthService initialized. Initial current user profile:', initialProfile);
 
-    // Proactively check authentication status on service initialization
-    // This will validate the token from localStorage immediately.
-    // If invalid, it will call logout(), which will update the BehaviorSubject.
     if (this.getToken()) {
       this.checkAuthStatus().catch(error => {
         console.warn('AuthService: Initial token validation failed during startup. User will be logged out if not already.', error);
       });
     } else {
-      // Ensure the subject is null if no token is found on startup
       this._currentUserProfileSubject.next(null);
     }
   }
@@ -82,7 +76,7 @@ export class AuthService {
   private removeToken(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('currentUser');
-    this._currentUserProfileSubject.next(null); // Emit null to indicate logged out
+    this._currentUserProfileSubject.next(null); 
     console.log('Token and user profile removed from localStorage. User logged out.');
   }
 
@@ -123,7 +117,7 @@ export class AuthService {
       console.log('User profile fetched successfully:', profile);
 
       localStorage.setItem('currentUser', JSON.stringify(profile));
-      this._currentUserProfileSubject.next(profile); // Emit the new profile
+      this._currentUserProfileSubject.next(profile); 
       console.log('CurrentUserProfile updated. Navigating to /home.');
       this.router.navigate(['/home']);
       return response;
@@ -165,7 +159,7 @@ export class AuthService {
       console.log('AuthService: Token found. Attempting to get profile for status check.');
       const profile = await this.getProfile();
       localStorage.setItem('currentUser', JSON.stringify(profile));
-      this._currentUserProfileSubject.next(profile); // Emit the validated profile
+      this._currentUserProfileSubject.next(profile); 
       console.log('AuthService: Auth status check successful. User is authenticated.');
       return profile;
     } catch (err: any) {

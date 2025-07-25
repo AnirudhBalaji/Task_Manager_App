@@ -9,10 +9,10 @@ export const NANO_CLIENT = 'NANO_CLIENT';
     {
       provide: NANO_CLIENT,
       useFactory: () => {
-        const couchUrl = process.env.COUCHDB_URL || 'http://admin:password@couchdb_task_manager:5984';
-        const couch = Nano(couchUrl);
-        return couch;
-      },
+        const couchUrl = process.env.COUCHDB_URL || 'http://admin:password@localhost:5984';
+        console.log('[NanoModule] Using CouchDB URL:', couchUrl);
+        return Nano(couchUrl);
+      }
     },
   ],
   exports: [NANO_CLIENT],
